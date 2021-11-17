@@ -1,0 +1,59 @@
+/*
+ * === fba.h ===
+ *
+ * Fixed buffer allocators.
+ *
+ * Copyright 2021 Gavin Ratcliff
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#ifndef DALEK_FBA_H
+#define DALEK_FBA_H
+
+#include <dalek/defs.h>
+
+/*
+ * Stores a fixed chunk of bytes and allocates off pieces. 
+ * The fixed buffer cannot be resized and memory must be released all at one time
+ */
+struct dalek_fba {
+    uint8_t *buf, *top, *last;
+};
+
+/*
+ * Initializes the fixed buffer allocator pointed to by [fba].
+ */
+void dalek_fba_init(struct dalek_fba *fba, uint8_t *buf, size_t size);
+
+/* 
+ * Returns a pointer to the start of a buffer [amt] bytes long.
+ * Returns NULL on OOM.
+ */
+uint8_t *dalek_fba_alloc(struct dalek_fba *fba, size_t amt);
+
+/*
+ * All blocks allocated from [fba] are invalidated and the container begins 
+ * allocating memory from the start of the buffer again.
+ *
+ * Implementation Note: All memory in the buffer is zeroed on reset.
+ */
+void dalek_fba_reset(struct dalek_fba *fba);
+
+#endif /* DALEK_FBA_H */
