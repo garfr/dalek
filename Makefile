@@ -5,6 +5,8 @@ AR= ar
 SRCDIR= src
 INCDIR= inc
 OBJDIR= build
+TESTDIR= test
+
 TARGET= $(OBJDIR)/dalek.a
 
 CWARN= -Wall -Wextra -Werror
@@ -18,9 +20,14 @@ INC= -I$(INCDIR)
 SOURCES= src/fba.c
 OBJECTS= $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(SOURCES:.c=.o))
 
+TESTS= test/fba_test.c
+TEST_TARGETS= $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(TESTS:.c=.out))
+
 all: $(TARGET)
 
 remake: clean all
+
+test:
 
 clean:
 	@$(RM) -rf $(OBJDIR)
@@ -29,6 +36,11 @@ clean:
 $(TARGET): $(OBJECTS)
 	$(AR) -rc -o $@ $^
 
-
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+test: $(TEST_TARGETS)
+
+$(TESTDIR)/%.out: $(TESTDIR)/%.c 
+	$(CC) $(CFLAGS) $(INC) -o $@ $< $(TARGET)
+	./$@

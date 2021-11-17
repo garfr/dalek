@@ -30,4 +30,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#endif
+#ifdef NDEBUG
+#define DALEK_CAREFUL
+#endif /* NDEBUG */
+
+#endif /* DALEK_DEFS_H */

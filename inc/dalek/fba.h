@@ -37,10 +37,32 @@ struct dalek_fba {
     uint8_t *buf, *top, *last;
 };
 
+#ifdef DALEK_CAREFUL
+#define DALEK_FBA_ALLOC(fba, amt) ((fba)->buf == NULL ||                      \
+                                  ((fba)->top += amt) >= (fba)->last ? NULL : \
+                                   (fba)->top - amt)
+#define DALEK_FBA_RESET(fba) (((fba)->top = memset((fba)->buf, 0,             \
+                                                   (fba)->last - (fba)->buf)))
+#else
+#define DALEK_FBA_ALLOC(fba, amt) (((fba)->top += ((size_t)amt)) >=           \
+                                    (fba)->last ? NULL :                      \
+                                    (fba)->top - ((size_t)amt))
+#define DALEK_FBA_RESET(fba) ((fba)->top = (fba)->buf)
+
+#endif /* DALEK_FBA_ALLOC */
+
 /*
  * Initializes the fixed buffer allocator pointed to by [fba].
+ * The allocator takes ownership of the buffer for as long as needed.
+ * If the buffer is invalidated, all allocations made with the buffer are invalid.
  */
 void dalek_fba_init(struct dalek_fba *fba, uint8_t *buf, size_t size);
+
+/*
+ * Removes all link between the allocator and its underlying buffer, making all
+ * future allocations dereference NULL pointers or return NULL (on DALEK_CAREFUL).
+ */
+void dalek_fba_deinit(struct dalek_fba *fba);
 
 /* 
  * Returns a pointer to the start of a buffer [amt] bytes long.
@@ -52,7 +74,7 @@ uint8_t *dalek_fba_alloc(struct dalek_fba *fba, size_t amt);
  * All blocks allocated from [fba] are invalidated and the container begins 
  * allocating memory from the start of the buffer again.
  *
- * Implementation Note: All memory in the buffer is zeroed on reset.
+ * If DALEK_CAREFUL is defined, it zeroes all memory.
  */
 void dalek_fba_reset(struct dalek_fba *fba);
 

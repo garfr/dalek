@@ -34,8 +34,18 @@ dalek_fba_init(struct dalek_fba *fba, uint8_t *buf, size_t size) {
     fba->last = fba->buf + size; 
 }
 
+void 
+dalek_fba_deinit(struct dalek_fba *fba) {
+    fba->buf = fba->last = fba->top = NULL;
+}
+
 uint8_t *
 dalek_fba_alloc(struct dalek_fba *fba, size_t amt) {
+#ifdef DALEK_CAREFUL
+    if (fba->buf == NULL) {
+        return NULL
+    }
+#endif /* DALEK_CAREFUL */
     if ((fba->top += amt) >= fba->last) {
         return NULL;
     }
@@ -45,5 +55,7 @@ dalek_fba_alloc(struct dalek_fba *fba, size_t amt) {
 void
 dalek_fba_reset(struct dalek_fba *fba) {
     fba->top = fba->buf;
+#ifdef DALEK_CAREFUL
     memset(fba->buf, 0, fba->last - fba->buf);
+#endif /* DALEK_CAREFUL */
 }
